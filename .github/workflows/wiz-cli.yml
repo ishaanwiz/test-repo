@@ -29,4 +29,4 @@ jobs:
       #     WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
 
       - name: Run wiz CLI scan
-        run: ./wizcli scan dir . --client-id "$WIZ_CLIENT_ID" --client-secret "$WIZ_CLIENT_SECRET"
+        run: ./wizcli dir scan --path $SCAN_PATH --client-id "$WIZ_CLIENT_ID" --client-secret "$WIZ_CLIENT_SECRET"
