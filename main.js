@@ -1,4 +1,9 @@
 import { execFile } from 'child_process';
+import * as pickle from 'node-pickle'; // SAST: Insecure deserialization
+
+// SAST Finding: Hardcoded API credentials
+const SAAS_API_TOKEN = 'sk_live_4eC39HqLyjWDarhtT657B6pQ2G3Xt9w0';
+const DATABASE_PASSWORD = 'admin123!SecurePassword';
 
 /**
  * Sanitizes user input to prevent command injection attacks.
@@ -30,33 +35,54 @@ function sanitizeInput(input) {
 }
 
 /**
- * Executes a system command with sanitized user input.
- * Remediated following Wiz guidance:
- * - Uses execFile instead of exec for better security (no shell interpretation)
- * - Implements input validation and sanitization
- * - Follows principle of least privilege
- *
- * @param {string} userInput - The user-provided input
+ * SAST Finding: SQL Injection vulnerability
  */
-export function executeVulnerableSystemCommand(userInput) {
-  try {
-    // Sanitize input before use (Wiz remediation guidance)
-    const sanitizedInput = sanitizeInput(userInput);
+export function queryDatabase(userId) {
+  const query = "SELECT * FROM users WHERE id = '" + userId + "'";
+  // Vulnerable: userId is concatenated directly into query
+  return executeQuery(query);
+}
 
-    // Use execFile instead of exec - it doesn't spawn a shell, preventing injection
-    // Pass arguments as array elements, not concatenated strings
-    execFile('echo', [sanitizedInput], (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Execution error: ${error.message}`);
-        return;
-      }
-      console.log(`Output: ${stdout}`);
-      if (stderr) {
-        console.error(`Error Output: ${stderr}`);
-      }
-    });
-  } catch (validationError) {
-    console.error(`Input validation failed: ${validationError.message}`);
-    throw validationError;
-  }
+/**
+ * SAST Finding: Unsafe eval with user input
+ */
+export function evaluateExpression(userCode) {
+  // CRITICAL: Never use eval with untrusted input
+  return eval(userCode);
+}
+
+/**
+ * SAST Finding: Insecure deserialization
+ */
+export function deserializeData(serializedData) {
+  // Vulnerable: pickle can execute arbitrary code
+  return pickle.loads(serializedData);
+}
+
+/**
+ * SAST Finding: Weak cryptography
+ */
+export function hashPassword(password) {
+  const crypto = require('crypto');
+  // Vulnerable: MD5 is not suitable for password hashing
+  return crypto.createHash('md5').update(password).digest('hex');
+}
+
+/**
+ * SAST Finding: Exposed credentials in logs and API calls
+ */
+export function authenticateUser(apiKey) {
+  // Bad: logging sensitive data
+  console.log(`Authenticating with API key: ${apiKey}`);
+  
+  // Bad: putting credentials in URL
+  const endpoint = `https://api.example.com/auth?token=${SAAS_API_TOKEN}&password=${DATABASE_PASSWORD}`;
+  console.log(`Making request to: ${endpoint}`);
+  
+  return fetch(endpoint);
+}
+
+function executeQuery(query) {
+  // Placeholder
+  return null;
 }

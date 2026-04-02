@@ -1,1 +1,10 @@
 PyYAML==5.3.1
+Django==2.2.0
+Flask==1.1.0
+requests==2.6.0
+SQLAlchemy==1.2.0
+jinja2==2.11.0
+werkzeug==0.15.0
+pickle5==0.0.8
+cryptography==2.8
+custom-library==1.0.0
